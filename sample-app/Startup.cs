@@ -55,18 +55,15 @@ namespace sample_app
             app.Map("/metrics", appConfig => {
                 appConfig.Run(async context =>
                 {
-                    var req = context.Request;
-                    var response = context.Response;
-
-                    var acceptHeader = req.Headers["Accept"];
+                    var acceptHeader = context.Request.Headers["Accept"];
                     var contentType = ScrapeHandler.GetContentType(acceptHeader);
 
-                    response.ContentType = contentType;
+                    context.Response.ContentType = contentType;
 
-                    using (var outputStream = response.Body)
+                    using (var outputStream = context.Response.Body)
                     {
-                        var collected = collectorRegistry.CollectAll();
-                        ScrapeHandler.ProcessScrapeRequest(collected, contentType, outputStream);
+                        ScrapeHandler.ProcessScrapeRequest(collectorRegistry.CollectAll(), 
+                            contentType, outputStream);
                     }
 
                     await Task.FromResult(0).ConfigureAwait(false);
